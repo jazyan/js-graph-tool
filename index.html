@@ -1,7 +1,15 @@
 <!DOCTYPE html5>
 <html>
     <head>
-        <canvas id="canvas" width="1000" height="1000"></canvas>
+        <div style="position: relative">
+            <canvas id="canvas" width=1000 height=1000></canvas>
+            <svg id="svg" width=1000 height=1000 
+                style="position: absolute; 
+                       left: 0px;
+                       top: 0px;
+                       z-index: -1;">
+            </svg>
+        </div>
         <script src="js/graph_drawer.js"></script>
     </head>
 </html>
