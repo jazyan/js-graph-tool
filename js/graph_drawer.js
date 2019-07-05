@@ -19,7 +19,9 @@ function createSVGCircle(x, y, r, strokeColor) {
     circle.setAttribute("cx", x);
     circle.setAttribute("cy", y);
     circle.setAttribute("r", r);
-    circle.setAttribute("style", "fill: none; stroke: " + strokeColor + "; stroke-width: 2px;");
+    circle.setAttribute("fill", "none");
+    circle.setAttribute("stroke", strokeColor);
+    circle.setAttribute("stroke-width", "2px");
     return circle;
 }
 
@@ -48,11 +50,37 @@ function checkBoundary(event) {
         var centerDist = Math.pow(posX - nodeCenters[i][0], 2) + Math.pow(posY - nodeCenters[i][1], 2)
         if (centerDist < Math.pow(radius, 2)) {
             console.log("HELLO" + nodeCenters[i]);
-            var circle = svg.children[i+1];
-            var strokeColor = "red";
-            circle.setAttribute("style", "fill: none; stroke: " + strokeColor + "; stroke-width: 2px;");
-            return;
+            return i;
         }
+    }
+    return -1;  // no matches
+}
+
+// TODO: this selected node nonsense
+var selectedNode = null;
+function deleteNode(event) {
+    if (selectedNode != null) {
+        svg.removeChild(circle);
+    }
+}
+
+function colorCircle(index) {
+    var circle = svg.children[index+1];
+    var strokeColor = "black";
+    var currColor = circle.getAttribute("stroke");
+    if (currColor === "black") {
+        strokeColor = "red";
+        selectedNode = circle;
+    } else {
+        selectedNode = null;
+    }
+    circle.setAttribute("stroke", strokeColor);
+}
+
+// TODO: figure out how to make this work
+document.onkeydown = function (e) {
+    if (e.shiftKey) {
+        deleteNode(e);
     }
 }
 
@@ -61,6 +89,9 @@ window.onload = function () {
         draw(e);
     }
     canvas.onclick = function (e) {
-        checkBoundary(e);
+        var index = checkBoundary(e);
+        if (index >= 0) {
+            colorCircle(index);
+        }
     }
 }
