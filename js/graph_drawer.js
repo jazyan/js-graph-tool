@@ -42,13 +42,11 @@ function draw(event) {
 // checks whether the click is in the boundary of a node
 // if so, change the color of the node to red
 // unselect --> need to change color back to black...
-function checkBoundary(event) {
+function checkBoundary(event, distance) {
     var pos = getMousePos(canvas, event);
-    posX = pos.x;
-    posY = pos.y;
     for (var i = 0; i < nodeCenters.length; ++i) {
-        var centerDist = Math.pow(posX - nodeCenters[i][0], 2) + Math.pow(posY - nodeCenters[i][1], 2)
-        if (centerDist < Math.pow(radius, 2)) {
+        var centerDist = Math.pow(pos.x - nodeCenters[i][0], 2) + Math.pow(pos.y - nodeCenters[i][1], 2)
+        if (centerDist < Math.pow(distance, 2)) {
             console.log("HELLO" + nodeCenters[i]);
             return i;
         }
@@ -86,10 +84,15 @@ document.onkeydown = function (e) {
 
 window.onload = function () {
     canvas.ondblclick = function (e) {
-        draw(e);
+        // to ensure that the nodes don't overlap
+        // they have to be 2 * radius away from each other
+        var index = checkBoundary(e, radius * 2);
+        if (index === -1) {
+            draw(e);
+        }
     }
     canvas.onclick = function (e) {
-        var index = checkBoundary(e);
+        var index = checkBoundary(e, radius);
         if (index >= 0) {
             colorCircle(index);
         }
