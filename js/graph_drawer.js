@@ -1,9 +1,13 @@
 var canvas = document.getElementById("canvas");
-var ctx = canvas.getContext("2d");
-var svg = document.getElementById("svg");
 
+var ctx = canvas.getContext("2d");
 ctx.strokeStyle = "black";
 ctx.strokeRect(20, 20, 800, 800)
+
+var svg = document.getElementById("svg");
+
+var radius = 25;
+var selectedNode = null;
 
 // taken from https://stackoverflow.com/a/20516496
 function getMousePos(canvas, event) {
@@ -11,7 +15,7 @@ function getMousePos(canvas, event) {
     return {
         x: event.clientX - rect.left,
         y: event.clientY - rect.top
-    }
+    };
 }
 
 function createSVGCircle(x, y, r, strokeColor) {
@@ -26,17 +30,14 @@ function createSVGCircle(x, y, r, strokeColor) {
 }
 
 // TODO: better way to find overlap?
-// TODO: should prevent nodes from overlapping?
-var nodeCenters = [];
-var radius = 50;
-// TODO: make sure it's in the boundary
+// TODO: make sure it's within canvas boundary
 // decide what's a boundary
 function draw(event) {
     var pos = getMousePos(canvas, event);
     var circle = createSVGCircle(pos.x, pos.y, radius, "black");
     svg.appendChild(circle);
-    nodeCenters.push([pos.x, pos.y]);
-    console.log(nodeCenters);
+    console.log(svg.childNodes);
+    console.log(svg.children);
 }
 
 // checks whether the click is in the boundary of a node
@@ -44,40 +45,51 @@ function draw(event) {
 // unselect --> need to change color back to black...
 function checkBoundary(event, distance) {
     var pos = getMousePos(canvas, event);
-    for (var i = 0; i < nodeCenters.length; ++i) {
-        var centerDist = Math.pow(pos.x - nodeCenters[i][0], 2) + Math.pow(pos.y - nodeCenters[i][1], 2)
+    // first child of SVG is script, so start at index 1
+    if (svg.children.length < 2) {
+        return -1;
+    }
+    for (var i = 1; i < svg.children.length; ++i) {
+        var currCircle = svg.children[i];
+        var cx = currCircle.getAttribute("cx");
+        var cy = currCircle.getAttribute("cy");
+        var centerDist = Math.pow(pos.x - cx, 2) + Math.pow(pos.y - cy, 2);
         if (centerDist < Math.pow(distance, 2)) {
-            console.log("HELLO" + nodeCenters[i]);
+            console.log("HELLO" + currCircle);
             return i;
         }
     }
     return -1;  // no matches
 }
 
-// TODO: this selected node nonsense
-var selectedNode = null;
 function deleteNode(event) {
     if (selectedNode != null) {
-        svg.removeChild(circle);
+        svg.removeChild(selectedNode);
+        selectedNode = null;
     }
 }
 
 function colorCircle(index) {
-    var circle = svg.children[index+1];
+    var circle = svg.children[index];
     var strokeColor = "black";
     var currColor = circle.getAttribute("stroke");
     if (currColor === "black") {
         strokeColor = "red";
+        // check if there's currently a selected node
+        // and deselect it by changing the color back to black
+        if (selectedNode != null) {
+            selectedNode.setAttribute("stroke", "black"); 
+        }
         selectedNode = circle;
     } else {
+        // current node is red, so it is currently selected. deselect it
         selectedNode = null;
     }
     circle.setAttribute("stroke", strokeColor);
 }
 
-// TODO: figure out how to make this work
 document.onkeydown = function (e) {
-    if (e.shiftKey) {
+    if (e.keyCode == 8) {  // backspace
         deleteNode(e);
     }
 }
@@ -87,13 +99,13 @@ window.onload = function () {
         // to ensure that the nodes don't overlap
         // they have to be 2 * radius away from each other
         var index = checkBoundary(e, radius * 2);
-        if (index === -1) {
+        if (index == -1) {
             draw(e);
         }
     }
     canvas.onclick = function (e) {
         var index = checkBoundary(e, radius);
-        if (index >= 0) {
+        if (index > 0) {
             colorCircle(index);
         }
     }
