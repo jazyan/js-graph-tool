@@ -3,9 +3,13 @@
 
 var canvas = document.getElementById("canvas");
 
+var xlow = 20;
+var xhigh = 800;
+var ylow = 20;
+var yhigh = 800;
 var ctx = canvas.getContext("2d");
 ctx.strokeStyle = "black";
-ctx.strokeRect(20, 20, 800, 800)
+ctx.strokeRect(xlow, ylow, xhigh, yhigh);
 
 var svg = document.getElementById("svg");
 
@@ -23,6 +27,15 @@ function getMousePos(canvas, event) {
     };
 }
 
+function checkWithinBoundary(x, y, eps) {
+    return (
+        x > xlow + eps && 
+        x < xhigh - eps && 
+        y > ylow + eps && 
+        y < yhigh - eps 
+    );
+}
+
 function createSVGCircle(x, y, r, strokeColor) {
     var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     circle.setAttribute("cx", x);
@@ -34,11 +47,12 @@ function createSVGCircle(x, y, r, strokeColor) {
     return circle;
 }
 
-// TODO: better way to find overlap?
-// TODO: make sure it's within canvas boundary
-// decide what's a boundary
 function drawNode(event) {
     var pos = getMousePos(canvas, event);
+    // ensure that nodes do not touch the boundary
+    if (!checkWithinBoundary(pos.x, pos.y, radius / 2)) {
+        return;
+    }
     var circle = createSVGCircle(pos.x, pos.y, radius, "black");
     svg.appendChild(circle);
     nodeEdgeMap.set(circle, []);
@@ -49,6 +63,10 @@ function drawNode(event) {
 // unselect --> need to change color back to black...
 function checkBoundary(event, distance) {
     var pos = getMousePos(canvas, event);
+    // allow more leeway for clicking (eps = 1)
+    if (!checkWithinBoundary(pos.x, pos.y, 1)) {
+        return -1;
+    }
     for (var i = 0; i < svg.children.length; ++i) {
         var currNode = svg.children[i];
         // only consider SVG nodes that are circles
@@ -164,6 +182,7 @@ document.onkeydown = function (e) {
 }
 
 window.onload = function () {
+    // double click creates a node
     canvas.ondblclick = function (e) {
         // to ensure that the nodes don't overlap
         // they have to be 2 * radius away from each other
@@ -172,6 +191,9 @@ window.onload = function () {
             drawNode(e);
         }
     }
+    // single click selects / deselects node
+    // as well as creates edge
+    // TODO: delete edge
     canvas.onclick = function (e) {
         var index = checkBoundary(e, radius);
         if (index > 0) {
