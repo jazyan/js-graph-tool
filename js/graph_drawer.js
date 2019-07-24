@@ -11,6 +11,8 @@ var svg = document.getElementById("svg");
 
 var radius = 25;
 var selectedNode = null;
+// map of nodes keys to edge list values
+var nodeEdgeMap = new Map();
 
 // taken from https://stackoverflow.com/a/20516496
 function getMousePos(canvas, event) {
@@ -35,10 +37,11 @@ function createSVGCircle(x, y, r, strokeColor) {
 // TODO: better way to find overlap?
 // TODO: make sure it's within canvas boundary
 // decide what's a boundary
-function draw(event) {
+function drawNode(event) {
     var pos = getMousePos(canvas, event);
     var circle = createSVGCircle(pos.x, pos.y, radius, "black");
     svg.appendChild(circle);
+    nodeEdgeMap.set(circle, []);
 }
 
 // checks whether the click is in the boundary of a node
@@ -65,9 +68,37 @@ function checkBoundary(event, distance) {
 // deletes the current selectedNode
 function deleteNode() {
     if (selectedNode != null) {
+        deleteNodeEdges(selectedNode);
         svg.removeChild(selectedNode);
         selectedNode = null;
     }
+}
+
+// given a node that is to be deleted
+// delete its edges, and all references to its edges
+// that includes references in the edge lists of other nodes
+function deleteNodeEdges(toDeleteNode) {
+    var edges = nodeEdgeMap.get(toDeleteNode);
+    for (var [node, edgeList] of nodeEdgeMap) {
+        if (node === toDeleteNode) {
+            continue;
+        }
+        var toDelete = []
+        for (var i = 0; i < edges.length; ++i) {
+            for (var j = 0; j < edgeList.length; ++j) {
+                if (edges[i] === edgeList[j]) {
+                    toDelete.push(j);
+                }
+            }
+        }
+        for (var i = toDelete.length - 1; i >= 0; --i) {
+            edgeList.splice(toDelete[i], 1);
+        }
+    }
+    for (var i = 0; i < edges.length; ++i) {
+        svg.removeChild(edges[i]);
+    }
+    nodeEdgeMap.delete(toDeleteNode);
 }
 
 // taken from https://stackoverflow.com/a/6091752
@@ -89,6 +120,7 @@ function drawEdge(x1, y1, x2, y2) {
     line.setAttribute("stroke-width", 1.5);
     line.setAttribute("stroke", "black");
     svg.appendChild(line);
+    return line;
 }
 
 // this is more like deselect / select logic
@@ -112,7 +144,14 @@ function colorCircle(index) {
         y1 = parseInt(selectedNode.getAttribute("cy"));
         x2 = parseInt(circle.getAttribute("cx"));
         y2 = parseInt(circle.getAttribute("cy"));
-        drawEdge(x1, y1, x2, y2);
+        var line = drawEdge(x1, y1, x2, y2);
+        
+        var n1Edges = nodeEdgeMap.get(selectedNode);
+        n1Edges.push(line);
+
+        var n2Edges = nodeEdgeMap.get(circle);
+        n2Edges.push(line);
+
         selectedNode.setAttribute("stroke", "black");
         selectedNode = null;
     }
@@ -130,7 +169,7 @@ window.onload = function () {
         // they have to be 2 * radius away from each other
         var index = checkBoundary(e, radius * 2);
         if (index == -1) {
-            draw(e);
+            drawNode(e);
         }
     }
     canvas.onclick = function (e) {
