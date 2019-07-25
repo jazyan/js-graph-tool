@@ -1,6 +1,6 @@
-// TODO: delete a vertex, must delete edges
-// TODO: delete edge
+// TODO: delete edge --> selectedObject instead of selectedNode?
 
+// TODO: do I even need a canvas anymore?
 var canvas = document.getElementById("canvas");
 
 var xlow = 20;
@@ -9,6 +9,7 @@ var ylow = 20;
 var yhigh = 800;
 var ctx = canvas.getContext("2d");
 ctx.strokeStyle = "black";
+// TODO: draw this with SVG?
 ctx.strokeRect(xlow, ylow, xhigh, yhigh);
 
 var svg = document.getElementById("svg");
@@ -135,7 +136,7 @@ function drawEdge(x1, y1, x2, y2) {
     line.setAttribute("y1", bp1[1]);
     line.setAttribute("x2", bp2[0]);
     line.setAttribute("y2", bp2[1]);
-    line.setAttribute("stroke-width", 1.5);
+    line.setAttribute("stroke-width", 2);
     line.setAttribute("stroke", "black");
     svg.appendChild(line);
     return line;
@@ -201,3 +202,39 @@ window.onload = function () {
         }
     }
 }
+
+// SVG to PNG logic below
+// taken from https://stackoverflow.com/a/28226736
+var btn = document.querySelector('button');
+
+function triggerDownload (imgURI) {
+    var evt = new MouseEvent('click', {
+        view: window,
+        bubbles: false,
+        cancelable: true
+    });
+    var a = document.createElement('a');
+    a.setAttribute('download', 'graph.png');
+    a.setAttribute('href', imgURI);
+    a.setAttribute('target', '_blank');
+    a.dispatchEvent(evt);
+}
+
+btn.addEventListener('click', function () {
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    var data = (new XMLSerializer()).serializeToString(svg);
+    var DOMURL = window.URL || window.webkitURL || window;
+    
+    var img = new Image();
+    var svgBlob = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
+    var url = DOMURL.createObjectURL(svgBlob);
+    
+    img.onload = function () {
+        ctx.drawImage(img, 0, 0);
+        DOMURL.revokeObjectURL(url);
+        var imgURI = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
+        triggerDownload(imgURI);
+    };
+    img.src = url;
+});
