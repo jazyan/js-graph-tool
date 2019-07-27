@@ -1,5 +1,4 @@
 // TODO: delete edge --> selectedObject instead of selectedNode?
-
 // TODO: do I even need a canvas anymore?
 var canvas = document.getElementById("canvas");
 
@@ -150,11 +149,13 @@ function colorCircle(index) {
     if (selectedNode == null) {
         // if there's no currently selected node, the circle
         // becomes the node
-        circle.setAttribute("stroke", "red");
+        circle.setAttribute("stroke", "grey");
+        circle.setAttribute("fill", "grey");
         selectedNode = circle;
     } else if (selectedNode == circle) {
         // if the currently selected node is the circle, deselect it
         selectedNode.setAttribute("stroke", "black");
+        selectedNode.setAttribute("fill", "black");
         selectedNode = null;
     } else {
         // there is a selected node, and our current circle is another node
@@ -172,6 +173,7 @@ function colorCircle(index) {
         n2Edges.push(line);
 
         selectedNode.setAttribute("stroke", "black");
+        selectedNode.setAttribute("fill", "black");
         selectedNode = null;
     }
 }
@@ -238,3 +240,41 @@ btn.addEventListener('click', function () {
     };
     img.src = url;
 });
+
+// TODO: dragging logic
+// TODO: taken from https://www.kirupa.com/html5/drag.htm, but doesn't quite work
+var initialX;
+var initialY;
+var currentX;
+var currentY;
+var draggedObject = null;
+svg.addEventListener("mousedown", dragStart, false);
+svg.addEventListener("mouseup", dragEnd, false);
+svg.addEventListener("mousemove", drag, false);
+
+function dragStart(e) {
+    var index = checkBoundary(e, radius);
+    if (index > 0) {
+        draggedObject = svg.children[index];
+        initialX = draggedObject.getAttribute("cx");
+        initialY = draggedObject.getAttribute("cy");
+    }
+    console.log("START DRAG");
+}
+
+function dragEnd(e) {
+    initialX = currentX;
+    initialY = currentY;
+    draggedObject = null;
+}
+
+function drag(e) {
+    console.log("dragging");
+    if (draggedObject != null) {
+        var currentPos = getMousePos(e);
+        currentX = currentPos.x;
+        currentY = currentPos.y;
+        draggedObject.setAttribute("cx", currentX);
+        draggedObject.setAttribute("cy", currentY);
+    }
+}
