@@ -14,7 +14,7 @@ ctx.strokeRect(xlow, ylow, xhigh, yhigh);
 
 var svg = document.getElementById("svg");
 
-var radius = 25;
+var radius = 15;
 var selectedNode = null;
 // map of nodes keys to edge list values
 var nodeEdgeMap = new Map();
@@ -42,7 +42,7 @@ function createSVGCircle(x, y, r, strokeColor) {
     circle.setAttribute("cx", x);
     circle.setAttribute("cy", y);
     circle.setAttribute("r", r);
-    circle.setAttribute("fill", "white");
+    circle.setAttribute("fill", "black");
     circle.setAttribute("stroke", strokeColor);
     circle.setAttribute("stroke-width", "2px");
     return circle;
@@ -136,8 +136,8 @@ function drawEdge(x1, y1, x2, y2) {
     line.setAttribute("y1", bp1[1]);
     line.setAttribute("x2", bp2[0]);
     line.setAttribute("y2", bp2[1]);
-    line.setAttribute("stroke-width", 2);
-    line.setAttribute("stroke", "black");
+    line.setAttribute("stroke-width", 6);
+    line.setAttribute("stroke", "blue");
     svg.appendChild(line);
     return line;
 }
