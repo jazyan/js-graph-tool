@@ -1,4 +1,3 @@
-// TODO: delete edge --> selectedObject instead of selectedNode?
 // TODO: do I even need a canvas anymore?
 var canvas = document.getElementById("canvas");
 
@@ -14,7 +13,7 @@ ctx.strokeRect(xlow, ylow, xhigh, yhigh);
 var svg = document.getElementById("svg");
 
 var radius = 15;
-var selectedNode = null;
+var selectedObject = null;
 // map of nodes keys to edge list values
 var nodeEdgeMap = new Map();
 
@@ -59,7 +58,7 @@ function drawNode(event) {
 }
 
 // checks whether the click is in the boundary of a node
-// if so, change the color of the node to red
+// if so, change the color of the node to grey 
 // unselect --> need to change color back to black...
 function checkBoundary(event, distance) {
     var pos = getMousePos(canvas, event);
@@ -70,25 +69,70 @@ function checkBoundary(event, distance) {
     for (var i = 0; i < svg.children.length; ++i) {
         var currNode = svg.children[i];
         // only consider SVG nodes that are circles
-        if (currNode.nodeName !== "circle") {
-            continue;
-        }
-        var cx = currNode.getAttribute("cx");
-        var cy = currNode.getAttribute("cy");
-        var centerDist = Math.pow(pos.x - cx, 2) + Math.pow(pos.y - cy, 2);
-        if (centerDist < Math.pow(distance, 2)) {
-            return i;
+        if (currNode.nodeName === "circle") {
+            var cx = currNode.getAttribute("cx");
+            var cy = currNode.getAttribute("cy");
+            var centerDist = Math.pow(pos.x - cx, 2) + Math.pow(pos.y - cy, 2);
+            if (centerDist < Math.pow(distance, 2)) {
+                return i;
+            }
+        } else if (currNode.nodeName === "line") {
+            var x1 = parseInt(currNode.getAttribute("x1"));
+            var y1 = parseInt(currNode.getAttribute("y1"));
+            var x2 = parseInt(currNode.getAttribute("x2"));
+            var y2 = parseInt(currNode.getAttribute("y2"));
+            var posX = parseInt(pos.x);
+            var posY = parseInt(pos.y);
+            // TODO THIS IS WONKY FOR VERT LINES
+            var inBoundary = (
+                posX >= Math.min(x1, x2) - 1 && 
+                posX <= Math.max(x1, x2) + 1 && 
+                posY >= Math.min(y1, y2) - 1 && 
+                posY <= Math.max(y1, y2) + 1 
+            )
+            if (x1 === x2) {
+                console.log(posX, x1, x2);
+                if (inBoundary) {
+                    console.log("FOUND VERT");
+                    return i;
+                } else {
+                    console.log("NOPEP")
+                    continue;
+                }
+            }
+            var slope = (y1 - y2) / (x1 - x2);
+            var equation = slope * (posX - x1) + y1;
+            if (inBoundary && Math.abs(equation - posY) <= 10) {
+                console.log("FOUND AN EDGE");
+                return i;
+            }
         }
     }
     return -1;  // no matches
 }
 
-// deletes the current selectedNode
-function deleteNode() {
-    if (selectedNode != null) {
-        deleteNodeEdges(selectedNode);
-        svg.removeChild(selectedNode);
-        selectedNode = null;
+// deletes the current selected object 
+function deleteSelectedObject() {
+    if (selectedObject === null) {
+        return;
+    }
+    if (selectedObject.nodeName === "circle") {
+        deleteNodeEdges(selectedObject);
+    } else {
+        deleteEdgeFromMap(selectedObject);
+    }
+    svg.removeChild(selectedObject);
+    selectedObject = null;
+}
+
+function deleteEdgeFromMap(toDeleteEdge) {
+    for (var [node, edgeList] of nodeEdgeMap) {
+        for (var i = 0; i < edgeList.length; ++i) {
+            if (toDeleteEdge === edgeList[i]) {
+                edgeList.splice(i, 1);
+                break;  // there should only be one occurrence of edge
+            }
+        }
     }
 }
 
@@ -141,46 +185,78 @@ function drawEdge(x1, y1, x2, y2) {
     return line;
 }
 
-// this is more like deselect / select logic
-// with drawing edge logic
-// TODO: find a better name
-function colorCircle(index) {
-    var circle = svg.children[index];
-    if (selectedNode == null) {
-        // if there's no currently selected node, the circle
-        // becomes the node
-        circle.setAttribute("stroke", "grey");
-        circle.setAttribute("fill", "grey");
-        selectedNode = circle;
-    } else if (selectedNode == circle) {
-        // if the currently selected node is the circle, deselect it
-        selectedNode.setAttribute("stroke", "black");
-        selectedNode.setAttribute("fill", "black");
-        selectedNode = null;
+function selectEdge(edge) {
+    edge.setAttribute("stroke", "grey");
+}
+
+function deselectEdge(edge) {
+    edge.setAttribute("stroke", "blue");
+}
+
+function selectNode(node) {
+    node.setAttribute("stroke", "grey");
+    node.setAttribute("fill", "grey");
+}
+
+function deselectNode(node) {
+    node.setAttribute("stroke", "black");
+    node.setAttribute("fill", "black");
+}
+
+function clickEdge(edge) {
+    if (selectedObject === null) {
+        selectEdge(edge);
+        selectedObject = edge;
+    } else if (selectedObject.nodeName === "circle") {
+        deselectNode(selectedObject);
+        selectEdge(edge);
+        selectedObject = edge;
+    } else if (selectedObject === edge) {
+        deselectEdge(edge);
+        selectedObject = null;
     } else {
-        // there is a selected node, and our current circle is another node
+        // selectedObject is a line other than current edge
+        deselectEdge(selectedObject)
+        selectEdge(edge);
+        selectedObject = edge;
+    }
+}
+
+function clickNode(node) {
+    if (selectedObject === null) {
+        // if there's no currently selected node, the circle becomes the node
+        selectNode(node);
+        selectedObject = node;
+    } else if (selectedObject.nodeName === "line") {
+        deselectEdge(selectedObject);
+        selectNode(node);
+        selectedObject = node;
+    } else if (selectedObject === node) {
+        // if the currently selected node is the circle, deselect it
+        deselectNode(node);
+        selectedObject = null;
+    } else {
+        // there is a selected circle, and our current circle is another node
         // that means we want to draw an edge! then deselect the node
-        x1 = parseInt(selectedNode.getAttribute("cx"));
-        y1 = parseInt(selectedNode.getAttribute("cy"));
-        x2 = parseInt(circle.getAttribute("cx"));
-        y2 = parseInt(circle.getAttribute("cy"));
+        x1 = parseInt(selectedObject.getAttribute("cx"));
+        y1 = parseInt(selectedObject.getAttribute("cy"));
+        x2 = parseInt(node.getAttribute("cx"));
+        y2 = parseInt(node.getAttribute("cy"));
         var line = drawEdge(x1, y1, x2, y2);
-        
-        var n1Edges = nodeEdgeMap.get(selectedNode);
+        // add edge to nodeEdgeMap        
+        var n1Edges = nodeEdgeMap.get(selectedObject);
         n1Edges.push(line);
-
-        var n2Edges = nodeEdgeMap.get(circle);
+        var n2Edges = nodeEdgeMap.get(node);
         n2Edges.push(line);
-
-        selectedNode.setAttribute("stroke", "black");
-        selectedNode.setAttribute("fill", "black");
-        selectedNode = null;
+        // deselect currently selected node
+        deselectNode(selectedObject);
+        selectedObject = null;
     }
 }
 
 document.onkeydown = function (e) {
     if (e.keyCode == 8) {  // backspace
-        deleteNode();
+        deleteSelectedObject();
     }
 }
 
@@ -200,7 +276,12 @@ window.onload = function () {
     canvas.onclick = function (e) {
         var index = checkBoundary(e, radius);
         if (index > 0) {
-            colorCircle(index);
+            var node = svg.children[index];
+            if (node.nodeName === "line") {
+                clickEdge(node);
+            } else {
+                clickNode(node);
+            }
         }
     }
 }
