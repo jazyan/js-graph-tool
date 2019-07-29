@@ -1,18 +1,24 @@
 <!DOCTYPE html5>
 <html>
     <head>
-        <div style="text-align: center;">
-            <button>download as PNG</button>
-        </div>
         <div style="position: relative">
-            <canvas id="canvas" width=1000 height=1000></canvas>
-            <svg id="svg" width=1000 height=1000 
+            <canvas id="canvas" width=825 height=825></canvas>
+            <svg id="svg" width=825 height=825 
                 style="position: absolute; 
                        left: 0px;
                        top: 0px;
                        z-index: -1;">
             </svg>
         </div>
+        <ul>
+            <li><b>double-click</b> to create a node</li>
+            <li><b>click</b> to select / deselect a node</li>
+            <li><b>click</b> a node, then click another to create an edge between them</li>
+            <li><b>click</b> to select / deselect an edge</li>
+            <li><b>backspace </b> to delete selected node or edge</li>
+        </ul>
+        <button>download as PNG</button>
     </head>
+    <script src="js/utils.js"></script>
     <script src="js/graph_drawer.js"></script>
 </html>

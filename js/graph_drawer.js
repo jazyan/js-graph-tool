@@ -1,14 +1,5 @@
 // TODO: do I even need a canvas anymore?
-var canvas = document.getElementById("canvas");
-
-var xlow = 20;
-var xhigh = 800;
-var ylow = 20;
-var yhigh = 800;
-var ctx = canvas.getContext("2d");
-ctx.strokeStyle = "black";
 // TODO: draw this with SVG?
-ctx.strokeRect(xlow, ylow, xhigh, yhigh);
 
 var svg = document.getElementById("svg");
 
@@ -16,24 +7,6 @@ var radius = 15;
 var selectedObject = null;
 // map of nodes keys to edge list values
 var nodeEdgeMap = new Map();
-
-// taken from https://stackoverflow.com/a/20516496
-function getMousePos(canvas, event) {
-    var rect = canvas.getBoundingClientRect();
-    return {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top
-    };
-}
-
-function checkWithinBoundary(x, y, eps) {
-    return (
-        x > xlow + eps && 
-        x < xhigh - eps && 
-        y > ylow + eps && 
-        y < yhigh - eps 
-    );
-}
 
 function createSVGCircle(x, y, r, strokeColor) {
     var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -49,7 +22,7 @@ function createSVGCircle(x, y, r, strokeColor) {
 function drawNode(event) {
     var pos = getMousePos(canvas, event);
     // ensure that nodes do not touch the boundary
-    if (!checkWithinBoundary(pos.x, pos.y, radius / 2)) {
+    if (!checkWithinCanvas(pos.x, pos.y, radius / 2)) {
         return;
     }
     var circle = createSVGCircle(pos.x, pos.y, radius, "black");
@@ -63,7 +36,7 @@ function drawNode(event) {
 function checkBoundary(event, distance) {
     var pos = getMousePos(canvas, event);
     // allow more leeway for clicking (eps = 1)
-    if (!checkWithinBoundary(pos.x, pos.y, 1)) {
+    if (!checkWithinCanvas(pos.x, pos.y, 1)) {
         return -1;
     }
     for (var i = 0; i < svg.children.length; ++i) {
@@ -83,17 +56,16 @@ function checkBoundary(event, distance) {
             var y2 = parseInt(currNode.getAttribute("y2"));
             var posX = parseInt(pos.x);
             var posY = parseInt(pos.y);
-            // TODO THIS IS WONKY FOR VERT LINES
             var inBoundary = (
                 posX >= Math.min(x1, x2) - 1 && 
                 posX <= Math.max(x1, x2) + 1 && 
                 posY >= Math.min(y1, y2) - 1 && 
                 posY <= Math.max(y1, y2) + 1 
             )
-            if (x1 === x2) {
+            if (x1 === x2 || y1 === y2) {
                 console.log(posX, x1, x2);
                 if (inBoundary) {
-                    console.log("FOUND VERT");
+                    console.log("FOUND VERT / HOR LINE");
                     return i;
                 } else {
                     console.log("NOPEP")
@@ -101,8 +73,10 @@ function checkBoundary(event, distance) {
                 }
             }
             var slope = (y1 - y2) / (x1 - x2);
-            var equation = slope * (posX - x1) + y1;
-            if (inBoundary && Math.abs(equation - posY) <= 10) {
+            var equationY = slope * (posX - x1) + y1;
+            var equationX = (posY - y1) / slope + x1;
+            var inEquation = (Math.abs(equationY - posY) <= 5) || (Math.abs(equationX - posX) <= 5);
+            if (inBoundary && inEquation) {
                 console.log("FOUND AN EDGE");
                 return i;
             }
