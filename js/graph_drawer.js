@@ -16,7 +16,7 @@ window.onload = function () {
         // to ensure that the nodes don't overlap
         // they have to be 2 * radius away from each other
         var index = checkBoundary(e, radius * 2);
-        if (index == -1) {
+        if (index === -1) {
             drawNode(e);
         }
     }
@@ -25,7 +25,7 @@ window.onload = function () {
     // TODO: delete edge
     canvas.onclick = function (e) {
         var index = checkBoundary(e, radius);
-        if (index > 0) {
+        if (index >= 0) {
             var node = svg.children[index];
             if (node.nodeName === "line") {
                 clickEdge(node);
