@@ -3,8 +3,10 @@ ctx.strokeStyle = "black";
 ctx.strokeRect(XLOW, YLOW, XHIGH, YHIGH);
 
 document.onkeydown = function (e) {
-    if (e.keyCode == 8) {  // backspace
+    if (e.keyCode === 8) {  // backspace
         deleteSelectedObject();
+    } else if (e.keyCode === 16) {  // shift
+        colorSelectedObject();
     }
 }
 

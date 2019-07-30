@@ -35,3 +35,17 @@ function drawEdge(x1, y1, x2, y2) {
     svg.appendChild(line);
     return line;
 }
+
+function colorSelectedObject() {
+    if (selectedObject === null) {
+        return;
+    } else if (selectedObject.nodeName === "line") {
+        var currColor = selectedObject.getAttribute("stroke");
+        if (currColor === "blue") {
+            currColor = "red";
+        } else {
+            currColor = "blue";
+        }
+        selectedObject.setAttribute("stroke", currColor);
+    }
+}

@@ -1,9 +1,9 @@
 function selectEdge(edge) {
-    edge.setAttribute("stroke", "grey");
+    edge.setAttribute("stroke-width", 10);
 }
 
 function deselectEdge(edge) {
-    edge.setAttribute("stroke", "blue");
+    edge.setAttribute("stroke-width", 6);
 }
 
 function selectNode(node) {
