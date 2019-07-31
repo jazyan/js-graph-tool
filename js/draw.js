@@ -31,9 +31,18 @@ function drawEdge(x1, y1, x2, y2) {
     line.setAttribute("x2", bp2[0]);
     line.setAttribute("y2", bp2[1]);
     line.setAttribute("stroke-width", 6);
-    line.setAttribute("stroke", "blue");
+    line.setAttribute("stroke", currToggleColor);
     svg.appendChild(line);
     return line;
+}
+
+function toggleColor() {
+    if (currToggleColor === "blue") {
+        currToggleColor = "red";
+    } else {
+        currToggleColor = "blue";
+    }
+    toggleColorText.style.color = currToggleColor;
 }
 
 function colorSelectedObject() {

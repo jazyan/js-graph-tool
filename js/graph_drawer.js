@@ -5,6 +5,8 @@ ctx.strokeRect(XLOW, YLOW, XHIGH, YHIGH);
 document.onkeydown = function (e) {
     if (e.keyCode === 8) {  // backspace
         deleteSelectedObject();
+    } else if (e.keyCode === 9) {  // tab
+        toggleColor();
     } else if (e.keyCode === 16) {  // shift
         colorSelectedObject();
     }
@@ -54,8 +56,10 @@ function triggerDownload (imgURI) {
 }
 
 btn.addEventListener('click', function () {
-    var canvas = document.getElementById('canvas');
-    var ctx = canvas.getContext('2d');
+    // deselect selectedObject so resulting PNG has no selected objects 
+    deselectObject(selectedObject);
+    selectedObject = null;
+    
     var data = (new XMLSerializer()).serializeToString(svg);
     var DOMURL = window.URL || window.webkitURL || window;
     
