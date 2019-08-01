@@ -9,6 +9,8 @@ document.onkeydown = function (e) {
         toggleColor();
     } else if (e.keyCode === 16) {  // shift
         colorSelectedObject();
+    } else if (e.keyCode === 17) {  // ctrl 
+        toggleDirected();
     }
 }
 

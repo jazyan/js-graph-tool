@@ -5,10 +5,13 @@ var radius = 12;
 var selectedObject = null;
 // map of nodes keys to edge list values
 var nodeEdgeMap = new Map();
-// current color
+// current color of edges
 var currToggleColor = "blue";
 var toggleColorText = document.querySelector("p");
 toggleColorText.style.color = currToggleColor;
+
+// toggle directed or undirected edges
+var directed = false;
 
 // canvas bounds
 var XLOW = 5;
