@@ -39,7 +39,6 @@ window.onload = function () {
         }
     }
 
-    /*
     canvas.onmousedown = function (e) {
         var index = checkBoundary(e, radius);
         if (index >= 0) {
@@ -58,7 +57,7 @@ window.onload = function () {
 
     canvas.onmouseleave = function (e) {
         endDrag(e);
-    }*/
+    }
 }
 
 // SVG to PNG logic below
