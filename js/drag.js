@@ -14,7 +14,6 @@ function drag(evt) {
         mousedElement.setAttribute("cx", pos.x);
         mousedElement.setAttribute("cy", pos.y);
         // TODO: update edge after dragging
-        edgeList = nodeEdgeMap.get(mousedElement);
     }
 }
 
