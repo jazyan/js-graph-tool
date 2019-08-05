@@ -24,9 +24,8 @@ window.onload = function () {
             drawNode(e);
         }
     }
+    
     // single click selects / deselects node
-    // as well as creates edge
-    // TODO: delete edge
     canvas.onclick = function (e) {
         var index = checkBoundary(e, radius);
         if (index >= 0) {
@@ -39,6 +38,7 @@ window.onload = function () {
         }
     }
 
+    // drag start
     canvas.onmousedown = function (e) {
         var index = checkBoundary(e, radius);
         if (index >= 0) {
@@ -47,16 +47,31 @@ window.onload = function () {
         }
     }
 
+    // drag
     canvas.onmousemove = function (e) {
         drag(e);
     }
 
+    // drag end
     canvas.onmouseup = function (e) {
         endDrag(e);
     }
 
+    // drag end
     canvas.onmouseleave = function (e) {
         endDrag(e);
+    }
+
+    // right-click to create edge
+    canvas.oncontextmenu = function(e) {
+        e.preventDefault();
+        var index = checkBoundary(e, radius);
+        if (index >= 0) {
+            var node = svg.children[index];
+            if (node.nodeName === "circle") {
+                createEdge(node);
+            }
+        }
     }
 }
 
