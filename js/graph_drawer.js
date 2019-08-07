@@ -73,6 +73,12 @@ window.onload = function () {
             }
         }
     }
+
+    // TODO: zoom
+    /* 
+    canvas.addEventListener('mousewheel', function(e) {
+        console.log("hello")
+    }, false);*/
 }
 
 // SVG to PNG logic below
