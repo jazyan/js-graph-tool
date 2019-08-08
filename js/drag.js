@@ -20,6 +20,7 @@ function updateEdge(x1, y1, x2, y2, edge) {
     edge.setAttribute("y2", bp2[1]);
 }
 
+// TODO: clean this up
 function drag(evt) {
     evt.preventDefault();
     var pos = getMousePos(canvas, evt);
@@ -28,9 +29,23 @@ function drag(evt) {
             return;
         } else {
             // update all the elements by delta
-            // TODO: boundary checks
             var deltaX = prevPos[0] - parseFloat(pos.x);
             var deltaY = prevPos[1] - parseFloat(pos.y);
+            // update prevPos here to make dragging smooth
+            prevPos[0] = parseFloat(pos.x);
+            prevPos[1] = parseFloat(pos.y);
+            // boundary checks
+            for (var i = 0; i < svg.children.length; ++i) {
+                var node = svg.children[i];
+                if (node.nodeName === "circle") {
+                    var x = parseFloat(node.getAttribute("cx")) - deltaX;
+                    var y = parseFloat(node.getAttribute("cy")) - deltaY;                    
+                    // -radius because we want to be stricter in terms of boundary touching
+                    if (!checkWithinCanvas(x, y, -radius)) {
+                        return // do not shift
+                    }
+                }
+            }
             for (var i = 0; i < svg.children.length; ++i) {
                 var node = svg.children[i];
                 if (node.nodeName === "circle") {
@@ -49,8 +64,6 @@ function drag(evt) {
                     node.setAttribute("y2", parseFloat(currY2) - deltaY);
                 }
             }
-            prevPos[0] = parseFloat(pos.x);
-            prevPos[1] = parseFloat(pos.y);
             return;
         }
     }
