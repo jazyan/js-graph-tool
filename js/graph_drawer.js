@@ -40,11 +40,7 @@ window.onload = function () {
 
     // drag start
     canvas.onmousedown = function (e) {
-        var index = checkBoundary(e, radius);
-        if (index >= 0) {
-            var node = svg.children[index];
-            startDrag(node);
-        }
+        startDrag(e);
     }
 
     // drag
@@ -73,7 +69,14 @@ window.onload = function () {
             }
         }
     }
-
+    // TODO: shift click for text?
+    /*
+    canvas.addEventListener("click", function (e) {
+        if (e.shiftKey) {
+            console.log("SHIFTY");
+        }
+    });
+    */
     // TODO: zoom
     /* 
     canvas.addEventListener('mousewheel', function(e) {
