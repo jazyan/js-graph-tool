@@ -77,10 +77,29 @@ window.onload = function () {
         }
     });
     */
+    /*
     // TODO: zoom
-    /* 
-    canvas.addEventListener('mousewheel', function(e) {
-        console.log("hello")
+    canvas.addEventListener('wheel', function(e) {
+        if (e.shiftKey) {
+            var delta = Math.sign(e.deltaY);
+            // scroll up is -1
+            // scroll down is 1
+            console.log(delta);
+            var scale = svg.getAttribute("transform");
+            var zoom = 1;
+            if (scale !== null) {
+                zoom = parseFloat(scale.substring(6, scale.length - 1));
+                console.log(zoom);
+            }
+            if (delta === 1) {
+                zoom += 0.1;
+            } else {
+                zoom -= 0.1;
+            }
+            var scale = "scale(" + zoom + ")";
+            console.log(scale);
+            svg.setAttribute("transform", scale);
+        }
     }, false);*/
 }
 
