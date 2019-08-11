@@ -137,6 +137,9 @@ btn.addEventListener('click', function () {
         DOMURL.revokeObjectURL(url);
         var imgURI = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
         triggerDownload(imgURI);
+        // clear the drawings we made on the canvas
+        // otherwise it will be overlaid by the SVG images
+        ctx.clearRect(XLOW, YLOW, XHIGH, YHIGH);
     };
     img.src = url;
 });
