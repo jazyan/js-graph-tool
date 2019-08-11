@@ -53,23 +53,14 @@ function clickEdge(edge) {
     }
 }
 
-// TODO: clean this up
 function clickNode(node) {
-    if (selectedObject === null) {
-        // if there's no currently selected node, the circle becomes the node
-        selectNode(node);
-        selectedObject = node;
-    } else if (selectedObject.nodeName === "line") {
-        deselectEdge(selectedObject);
-        selectNode(node);
-        selectedObject = node;
-    } else if (selectedObject === node) {
+    if (selectedObject === node) {
         // if the currently selected node is the circle, deselect it
         deselectNode(node);
         selectedObject = null;
     } else {
-        // there is a selected circle, and our current circle is another node
-        deselectNode(selectedObject);
+        // selected object is either null or not equal to current node
+        deselectObject(selectedObject);
         selectNode(node);
         selectedObject = node;
     }
